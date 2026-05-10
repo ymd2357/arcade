@@ -1,0 +1,68 @@
+{
+  "id": "stage_006",
+  "title": "矛盾を残す庭",
+  "goal": "矛盾を消しすぎても負ける",
+  "turnLimit": 10,
+  "cardUses": 5,
+  "objects": [
+    { "id": "flower_a", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 2, "stability": 5 },
+    { "id": "flower_b", "x": 1, "y": 2, "traits": ["flower", "alive"], "energy": 2, "stability": 5 },
+    { "id": "water_a", "x": 2, "y": 1, "traits": ["water", "wet"], "energy": 3, "stability": 4 },
+    { "id": "water_b", "x": 2, "y": 2, "traits": ["water", "wet"], "energy": 3, "stability": 4 },
+    { "id": "stone", "x": 3, "y": 1, "traits": ["stone"], "energy": 1, "stability": 6 }
+  ],
+  "rules": [
+    {
+      "id": "water_grows_flower",
+      "title": "水は花を育てる",
+      "description": "水の隣に花があると、花のエネルギーが増えます。",
+      "condition": { "near": ["water", "flower"] },
+      "effect": { "targetTrait": "flower", "energyDelta": 1 },
+      "priority": 1,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "wet_spreads_to_flower",
+      "title": "濡れは花に移る",
+      "description": "濡れたものの隣に花があると、花も濡れます。",
+      "condition": { "near": ["wet", "flower"] },
+      "effect": { "targetTrait": "flower", "addTrait": "wet" },
+      "priority": 2,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "wet_flower_disappears",
+      "title": "濡れた花は消える",
+      "description": "花が「濡れ」の性質を持つと、花は消えます。",
+      "condition": { "hasTraits": ["flower", "wet"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -4 },
+      "priority": 3,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "stone_calms_water",
+      "title": "石は水を落ち着かせる",
+      "description": "石の隣に水があると、水の安定が上がります。",
+      "condition": { "adjacent": { "subject": "stone", "object": "water" } },
+      "effect": { "targetTrait": "water", "stabilityDelta": 1 },
+      "priority": 4,
+      "visibleFromTurn": 2
+    },
+    {
+      "id": "dry_shadow_withers",
+      "title": "乾きの影",
+      "description": "乾いたものがあると、花の安定が下がります。",
+      "condition": { "hasTraits": ["dry"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -2 },
+      "priority": 5,
+      "visibleFromTurn": 3
+    }
+  ],
+  "availableCards": ["delay", "exception", "sacrifice"],
+  "winCondition": {
+    "afterTurns": 10,
+    "minStability": 1,
+    "minTension": 2,
+    "minLife": 1
+  }
+}

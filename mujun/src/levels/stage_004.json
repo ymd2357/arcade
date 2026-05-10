@@ -1,0 +1,48 @@
+{
+  "id": "stage_004",
+  "title": "育てる水、濡らす水",
+  "goal": "育てつつ濡れを防ぐ",
+  "turnLimit": 7,
+  "cardUses": 4,
+  "objects": [
+    { "id": "flower", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 2, "stability": 5 },
+    { "id": "water", "x": 2, "y": 1, "traits": ["water", "wet"], "energy": 3, "stability": 4 },
+    { "id": "stone", "x": 3, "y": 1, "traits": ["stone"], "energy": 1, "stability": 6 }
+  ],
+  "rules": [
+    {
+      "id": "water_grows_flower",
+      "title": "水は花を育てる",
+      "description": "水の隣に花があると、花のエネルギーが増えます。",
+      "condition": { "near": ["water", "flower"] },
+      "effect": { "targetTrait": "flower", "energyDelta": 1 },
+      "priority": 1,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "water_wets_flower",
+      "title": "水は花を濡らす",
+      "description": "水の隣に花があると、花に濡れが移ります。",
+      "condition": { "near": ["water", "flower"] },
+      "effect": { "targetTrait": "flower", "addTrait": "wet" },
+      "priority": 2,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "wet_flower_disappears",
+      "title": "濡れた花は消える",
+      "description": "花が「濡れ」の性質を持つと、花は消えます。",
+      "condition": { "hasTraits": ["flower", "wet"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -5 },
+      "priority": 3,
+      "visibleFromTurn": 1
+    }
+  ],
+  "availableCards": ["delay", "exception"],
+  "winCondition": {
+    "afterTurns": 7,
+    "minStability": 1,
+    "minTension": 0,
+    "minLife": 1
+  }
+}

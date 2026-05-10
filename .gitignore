@@ -4,3 +4,5 @@
 
 # Local tooling caches
 .npm-cache/
+node_modules/
+dist/

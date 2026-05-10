@@ -1,0 +1,39 @@
+{
+  "id": "stage_002",
+  "title": "片方だけ残る花",
+  "goal": "片方の花だけを7ターン残す",
+  "turnLimit": 7,
+  "cardUses": 3,
+  "objects": [
+    { "id": "flower_a", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 3, "stability": 4 },
+    { "id": "flower_b", "x": 1, "y": 2, "traits": ["flower", "alive"], "energy": 3, "stability": 4 },
+    { "id": "water", "x": 2, "y": 1, "traits": ["wet", "water"], "energy": 3, "stability": 4 }
+  ],
+  "rules": [
+    {
+      "id": "wet_spreads_to_flower",
+      "title": "濡れは花に移る",
+      "description": "濡れたものの隣に花があると、花も濡れます。",
+      "condition": { "near": ["wet", "flower"] },
+      "effect": { "targetTrait": "flower", "addTrait": "wet" },
+      "priority": 1,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "wet_flower_disappears",
+      "title": "濡れた花は消える",
+      "description": "花が「濡れ」の性質を持つと、花は消えます。",
+      "condition": { "hasTraits": ["flower", "wet"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -5 },
+      "priority": 2,
+      "visibleFromTurn": 1
+    }
+  ],
+  "availableCards": ["exception"],
+  "winCondition": {
+    "afterTurns": 7,
+    "minStability": 1,
+    "minTension": 0,
+    "minLife": 1
+  }
+}

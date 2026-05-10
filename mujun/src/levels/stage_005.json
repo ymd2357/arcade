@@ -1,0 +1,48 @@
+{
+  "id": "stage_005",
+  "title": "乾かす石",
+  "goal": "stone と flower を両立させる",
+  "turnLimit": 8,
+  "cardUses": 4,
+  "objects": [
+    { "id": "flower", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 2, "stability": 5 },
+    { "id": "stone", "x": 2, "y": 1, "traits": ["stone"], "energy": 1, "stability": 6 },
+    { "id": "water", "x": 3, "y": 1, "traits": ["water", "wet"], "energy": 3, "stability": 4 }
+  ],
+  "rules": [
+    {
+      "id": "stone_drains_water",
+      "title": "石は水を乾かす",
+      "description": "石の隣の水は濡れを失い、乾きます。",
+      "condition": { "near": ["stone", "wet"] },
+      "effect": { "targetTrait": "water", "removeTrait": "wet", "addTrait": "dry" },
+      "priority": 1,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "dry_withers_flower",
+      "title": "乾きは花を枯らす",
+      "description": "乾いたものの隣に花があると、花の安定が下がります。",
+      "condition": { "near": ["dry", "flower"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -3 },
+      "priority": 2,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "water_grows_flower",
+      "title": "水は花を育てる",
+      "description": "水の隣に花があると、花のエネルギーが増えます。",
+      "condition": { "near": ["water", "flower"] },
+      "effect": { "targetTrait": "flower", "energyDelta": 1 },
+      "priority": 3,
+      "visibleFromTurn": 1
+    }
+  ],
+  "availableCards": ["delay", "sacrifice"],
+  "winCondition": {
+    "afterTurns": 8,
+    "minStability": 1,
+    "minTension": 0,
+    "minLife": 1
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "stage_003",
+  "title": "濡れた石",
+  "goal": "stone の wet 性質を消して花を守る",
+  "turnLimit": 7,
+  "cardUses": 2,
+  "objects": [
+    { "id": "flower", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 3, "stability": 4 },
+    { "id": "stone", "x": 2, "y": 1, "traits": ["stone", "wet"], "energy": 1, "stability": 6 }
+  ],
+  "rules": [
+    {
+      "id": "wet_stone_soaks_flower",
+      "title": "濡れた石は花を濡らす",
+      "description": "濡れた石があると、花に濡れが移ります。",
+      "condition": { "hasTraits": ["stone", "wet"] },
+      "effect": { "targetTrait": "flower", "addTrait": "wet" },
+      "priority": 1,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "wet_flower_disappears",
+      "title": "濡れた花は消える",
+      "description": "花が「濡れ」の性質を持つと、花は消えます。",
+      "condition": { "hasTraits": ["flower", "wet"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -5 },
+      "priority": 2,
+      "visibleFromTurn": 1
+    }
+  ],
+  "availableCards": ["sacrifice"],
+  "winCondition": {
+    "afterTurns": 7,
+    "minStability": 1,
+    "minTension": 0,
+    "minLife": 1
+  }
+}
