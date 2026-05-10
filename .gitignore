@@ -1,3 +1,6 @@
 # Local symlinks to shared skill configs (managed by init-project skill)
 .markdownlint-cli2.jsonc
 .markdownlint.json
+
+# Local tooling caches
+.npm-cache/
