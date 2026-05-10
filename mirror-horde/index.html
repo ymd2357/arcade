@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mirror Horde</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #111;
+      color: #eee;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100dvh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    #app {
+      width: 100%;
+      max-width: 420px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    #hud {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      background: #1a1a1a;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    #board-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+    #board-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #151515;
+    }
+    #hand-area {
+      padding: 8px;
+      background: #1a1a1a;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .hand-card {
+      width: 56px;
+      height: 56px;
+      border: 2px solid #444;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      background: #222;
+      color: #eee;
+      font-family: monospace;
+    }
+    .hand-card.selected {
+      border-color: #4af;
+      background: #1a3050;
+    }
+    #actions {
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      background: #111;
+    }
+    #actions button {
+      flex: 1;
+      padding: 10px;
+      font-size: 15px;
+      font-family: monospace;
+      border: 1px solid #444;
+      background: #222;
+      color: #eee;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #actions button#btn-fire {
+      background: #2a1a00;
+      border-color: #f80;
+      color: #f80;
+    }
+    #gameover-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    #gameover-overlay.show { display: flex; }
+    #gameover-overlay h2 { font-size: 28px; color: #f44; }
+    #gameover-overlay p { font-size: 18px; }
+    #gameover-overlay button {
+      padding: 12px 32px;
+      font-size: 18px;
+      background: #222;
+      color: #eee;
+      border: 2px solid #888;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+  </style>
+  <script type="module" crossorigin src="/arcade/mirror-horde/assets/index-BqCgtTIB.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div id="hud">
+      <span id="hud-turn">Turn 0</span>
+      <span id="hud-score">Score 0</span>
+      <span id="hud-kills">Kills 0</span>
+    </div>
+    <div id="board-container">
+      <svg id="board-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="gameover-overlay">
+        <h2>GAME OVER</h2>
+        <p id="gameover-score"></p>
+        <button id="btn-restart">Restart</button>
+      </div>
+    </div>
+    <div id="hand-area">
+      <button class="hand-card" data-index="0" type="button">/</button>
+      <button class="hand-card" data-index="1" type="button">\</button>
+      <button class="hand-card" data-index="2" type="button">⌐</button>
+      <button class="hand-card" data-index="3" type="button">¬</button>
+      <button class="hand-card" data-index="4" type="button">↔</button>
+      <button class="hand-card" data-index="5" type="button">⊕</button>
+    </div>
+    <div id="actions">
+      <button id="btn-undo" type="button">Undo</button>
+      <button id="btn-fire" type="button">Fire!</button>
+    </div>
+  </div>
+</body>
+</html>
