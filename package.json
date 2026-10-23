@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build"
+    "dev:axiom": "vite --config axiom-heist/vite.config.ts",
+    "dev:self": "vite --config self-reference/vite.config.ts",
+    "build": "tsc --noEmit && vite build",
+    "build:axiom": "tsc --noEmit -p axiom-heist/tsconfig.json && vite build --config axiom-heist/vite.config.ts",
+    "build:self": "tsc --noEmit -p self-reference/tsconfig.json && vite build --config self-reference/vite.config.ts"
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^2.1.0",
