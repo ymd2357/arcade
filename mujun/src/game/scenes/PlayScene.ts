@@ -22,6 +22,7 @@ export class PlayScene extends Phaser.Scene {
   private state!: GameState;
   private selectedCardType: ThoughtCard['type'] | null = null;
   private pendingCard: ThoughtCard | null = null;
+  private pendingObjectId: string | null = null;
   private turnText!: Phaser.GameObjects.Text;
   private pendingText!: Phaser.GameObjects.Text;
   private boardView!: BoardView;
@@ -65,6 +66,9 @@ export class PlayScene extends Phaser.Scene {
     this.cardHandView = new CardHandView(this, 18, 658, (type) => {
       this.selectedCardType = type;
       this.pendingCard = null;
+      this.pendingObjectId = null;
+      this.boardView.setInteractionMode(type !== null, null);
+      this.boardView.update(this.state);
       this.updatePendingText();
     });
     this.metricView = new MetricView(this, 0, 0);
@@ -96,8 +100,11 @@ export class PlayScene extends Phaser.Scene {
     if (!card) return;
 
     this.pendingCard = card;
+    this.pendingObjectId = object.id;
     this.cardHandView.clearSelection();
     this.selectedCardType = null;
+    this.boardView.setInteractionMode(false, object.id);
+    this.boardView.update(this.state);
     this.updatePendingText();
   }
 
@@ -143,6 +150,8 @@ export class PlayScene extends Phaser.Scene {
     const result = simulateTurn(this.state, this.pendingCard);
     this.state = result.nextState;
     this.pendingCard = null;
+    this.pendingObjectId = null;
+    this.boardView.setInteractionMode(false, null);
     this.causeLogView.append(result.events);
     this.render();
 
@@ -170,10 +179,32 @@ export class PlayScene extends Phaser.Scene {
     if (!this.pendingText) return;
 
     if (this.pendingCard) {
-      this.pendingText.setText(`選択中：${this.pendingCard.type}`);
+      const ruleId = 'ruleId' in this.pendingCard ? this.pendingCard.ruleId : null;
+      const ruleName = ruleId
+        ? (this.state.rules.find((r) => r.id === ruleId)?.title ?? ruleId)
+        : null;
+      const targetId = 'target' in this.pendingCard ? this.pendingCard.target : null;
+
+      let msg = '';
+      if (this.pendingCard.type === 'delay') {
+        msg = `▶ 次ターン「${ruleName}」を止める`;
+      } else if (this.pendingCard.type === 'exception') {
+        msg = `▶ 次ターン「${targetId}」をすべてのルールから外す`;
+      } else {
+        msg = `▶ ${this.pendingCard.type} 適用予定`;
+      }
+      this.pendingText.setText(msg);
       return;
     }
 
-    this.pendingText.setText(this.selectedCardType ? '対象を選んでください' : '');
+    if (this.selectedCardType === 'delay') {
+      this.pendingText.setText('花をタップ → そのターンに効くルールを止めます');
+    } else if (this.selectedCardType === 'exception') {
+      this.pendingText.setText('花をタップ → その花を1ターン守ります');
+    } else if (this.selectedCardType) {
+      this.pendingText.setText('対象をタップしてください');
+    } else {
+      this.pendingText.setText('');
+    }
   }
 }
