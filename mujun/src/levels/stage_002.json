@@ -1,37 +1,47 @@
 {
   "id": "stage_002",
-  "title": "片方だけ残る花",
-  "goal": "片方の花だけを7ターン残す",
-  "turnLimit": 7,
-  "cardUses": 3,
+  "title": "二つの花",
+  "goal": "10ターン後まで少なくとも1つの花を残す",
+  "turnLimit": 10,
+  "cardUses": 4,
   "objects": [
-    { "id": "flower_a", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 3, "stability": 4 },
-    { "id": "flower_b", "x": 1, "y": 2, "traits": ["flower", "alive"], "energy": 3, "stability": 4 },
-    { "id": "water", "x": 2, "y": 1, "traits": ["wet", "water"], "energy": 3, "stability": 4 }
+    { "id": "water_0_0", "x": 0, "y": 0, "traits": ["water", "wet"], "energy": 5, "stability": 5 },
+    { "id": "water_2_0", "x": 2, "y": 0, "traits": ["water", "wet"], "energy": 5, "stability": 5 },
+    { "id": "flower_a",  "x": 0, "y": 3, "traits": ["flower", "alive"], "energy": 5, "stability": 6 },
+    { "id": "flower_b",  "x": 2, "y": 3, "traits": ["flower", "alive"], "energy": 5, "stability": 6 }
   ],
   "rules": [
     {
-      "id": "wet_spreads_to_flower",
-      "title": "濡れは花に移る",
-      "description": "濡れたものの隣に花があると、花も濡れます。",
-      "condition": { "near": ["wet", "flower"] },
-      "effect": { "targetTrait": "flower", "addTrait": "wet" },
+      "id": "water_falls",
+      "title": "水は落ちる",
+      "description": "水は毎ターン1マス下に広がります。",
+      "condition": { "hasTraits": ["water"] },
+      "effect": { "targetTrait": "water", "spread": { "withTraits": ["water", "wet"], "dy": 1 } },
       "priority": 1,
       "visibleFromTurn": 1
     },
     {
-      "id": "wet_flower_disappears",
-      "title": "濡れた花は消える",
-      "description": "花が「濡れ」の性質を持つと、花は消えます。",
-      "condition": { "hasTraits": ["flower", "wet"] },
-      "effect": { "targetTrait": "flower", "stabilityDelta": -5 },
+      "id": "water_wets_flower",
+      "title": "水は花を濡らす",
+      "description": "水に隣接した花は「濡れ」の性質を持ちます。",
+      "condition": { "adjacent": { "subject": "flower", "object": "wet" } },
+      "effect": { "targetTrait": "flower", "addTrait": "wet" },
       "priority": 2,
+      "visibleFromTurn": 1
+    },
+    {
+      "id": "wet_flower_wilts",
+      "title": "濡れた花は萎れる",
+      "description": "濡れた花は毎ターン生命力が1下がります。",
+      "condition": { "hasTraits": ["flower", "wet"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -1 },
+      "priority": 3,
       "visibleFromTurn": 1
     }
   ],
-  "availableCards": ["exception"],
+  "availableCards": ["delay", "exception"],
   "winCondition": {
-    "afterTurns": 7,
+    "afterTurns": 10,
     "minStability": 1,
     "minTension": 0,
     "minLife": 1

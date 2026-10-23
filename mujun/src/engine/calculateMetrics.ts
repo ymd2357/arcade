@@ -5,14 +5,13 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function calculateMetrics(state: GameState): Metrics {
-  const averageStability = state.objects.length === 0
+  const flowers = state.objects.filter((o) => o.traits.includes('flower'));
+  const averageStability = flowers.length === 0
     ? 0
-    : state.objects.reduce((sum, object) => sum + object.stability, 0) / state.objects.length;
+    : flowers.reduce((sum, o) => sum + o.stability, 0) / flowers.length;
   const stability = clamp(averageStability, 0, 10);
-  const tension = clamp(Math.round((10 - stability) / 2), 0, state.objects.length);
-  const hasLife = state.objects.some((object) =>
-    object.traits.includes('flower') || object.traits.includes('alive')
-  );
+  const tension = clamp(Math.round((10 - stability) / 2), 0, flowers.length);
+  const hasLife = flowers.length > 0;
 
   return {
     stability,

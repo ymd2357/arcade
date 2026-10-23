@@ -47,6 +47,9 @@ export function simulateTurn(
   const originalState = cloneState(state);
   const workingState = card ? applyThoughtCard(cloneState(state), card) : cloneState(state);
   const events = evaluateRules(workingState);
+  workingState.objects = workingState.objects.filter(
+    (o) => !(o.traits.includes('flower') && o.stability <= 0)
+  );
   const restoredState = {
     ...workingState,
     rules: originalRules,

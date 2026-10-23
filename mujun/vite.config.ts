@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   root: '.',
+  base: '/arcade/mujun/',
   resolve: {
     alias: { '@': '/src' }
   },
@@ -9,7 +10,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: 'public/index.html'
+      input: 'index.html'
     }
   }
 })

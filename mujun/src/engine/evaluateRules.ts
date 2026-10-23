@@ -1,5 +1,8 @@
 import type { GameEvent, GameObject, GameState, Rule, Trait } from './types';
 
+const GRID_COLS = 4;
+const GRID_ROWS = 4;
+
 function hasTrait(object: GameObject, trait: Trait): boolean {
   return object.traits.includes(trait);
 }
@@ -80,6 +83,30 @@ export function evaluateRules(
 
       if (!options?.dryRun) {
         applyEffect(target, rule);
+
+        if (rule.effect.spread) {
+          const { withTraits, dy = 0, dx = 0 } = rule.effect.spread;
+          const candidates = (dy !== 0 || dx !== 0)
+            ? [{ x: target.x + dx, y: target.y + dy }]
+            : [
+                { x: target.x - 1, y: target.y },
+                { x: target.x + 1, y: target.y },
+                { x: target.x, y: target.y - 1 },
+                { x: target.x, y: target.y + 1 },
+              ];
+          for (const pos of candidates) {
+            if (pos.x < 0 || pos.x >= GRID_COLS || pos.y < 0 || pos.y >= GRID_ROWS) continue;
+            if (state.objects.some((o) => o.x === pos.x && o.y === pos.y)) continue;
+            state.objects.push({
+              id: `water_${pos.x}_${pos.y}`,
+              x: pos.x,
+              y: pos.y,
+              traits: [...withTraits] as Trait[],
+              energy: 5,
+              stability: 5,
+            });
+          }
+        }
       }
     }
   }
