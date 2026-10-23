@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Self-Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:#100c16; --ink-2:#1a1422; --felt-a:#271b34; --felt-b:#0f0b15;
+      --parch:#ece0c4; --parch-2:#d9c8a2; --parch-ink:#2c2317; --parch-dim:#6c5d44;
+      --gold:#cda24a; --gold-2:#e7c97e; --gold-deep:#9c7a32;
+      --ox:#b5404c; --ox-deep:#7e2730; --teal:#5fc6bd; --teal-deep:#2c7a73;
+      --violet:#b49bff; --violet-deep:#5e44a6; --amber:#e8a94b;
+      --text:#efe7d6; --text-dim:#a99e88; --text-faint:#6f6450; --line:rgba(205,180,110,0.16);
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html,body { height:100%; }
+    body {
+      background:var(--ink); color:var(--text); font-family:"Spectral",Georgia,serif;
+      display:flex; justify-content:center; align-items:center; min-height:100dvh; overflow:hidden;
+      user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    }
+    button { font-family:inherit; touch-action:manipulation; cursor:pointer; }
+    #app {
+      position:relative; width:100%; max-width:468px; height:100dvh; max-height:980px;
+      display:flex; flex-direction:column;
+      background:
+        radial-gradient(120% 70% at 50% 0%, var(--felt-a), transparent 60%),
+        radial-gradient(140% 90% at 50% 108%, #2a1d22, transparent 55%),
+        linear-gradient(180deg, var(--felt-b), #0b0810);
+      border-left:1px solid var(--line); border-right:1px solid var(--line);
+      box-shadow:0 40px 120px rgba(0,0,0,0.7); overflow:hidden;
+    }
+    #app::after { content:""; position:absolute; inset:0; z-index:60; pointer-events:none;
+      background:radial-gradient(130% 100% at 50% 50%, transparent 58%, rgba(0,0,0,0.55) 100%); }
+    #grain { position:absolute; inset:0; z-index:61; pointer-events:none; opacity:0.05; mix-blend-mode:overlay;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+
+    /* topbar */
+    #topbar { position:relative; z-index:5; display:flex; align-items:center; justify-content:space-between; padding:10px 14px 4px; gap:10px; }
+    #act-label { font-family:"Cormorant Garamond",serif; font-weight:600; font-size:17px; letter-spacing:0.04em; color:var(--gold-2); }
+    #act-label small { color:var(--text-faint); font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:0.12em; margin-left:8px; }
+    #btn-restart { width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:rgba(0,0,0,0.3); color:var(--text-dim); font-size:15px; line-height:1; }
+    #btn-restart:hover { color:var(--gold-2); border-color:var(--gold-deep); }
+
+    /* enemies */
+    #table { position:relative; flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+    #enemies { display:flex; align-items:center; justify-content:center; gap:26px; padding:14px 16px 6px; flex-wrap:wrap; }
+    .enemy { position:relative; display:flex; flex-direction:column; align-items:center; gap:5px; width:120px; }
+    .enemy.hit { animation:hit 360ms ease; }
+    @keyframes hit { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 50%{transform:translateX(5px);} 75%{transform:translateX(-3px);} }
+    .enemy-intent { font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600; letter-spacing:0.04em; padding:3px 9px; border-radius:999px; border:1px solid var(--line); background:rgba(0,0,0,0.35); min-height:24px; display:inline-flex; align-items:center; gap:5px; }
+    .enemy-intent[data-kind="attack"] { color:#ff9a86; border-color:rgba(181,64,76,0.6); box-shadow:0 0 16px rgba(181,64,76,0.25); }
+    .enemy-intent[data-kind="block"]  { color:var(--teal); border-color:rgba(95,198,189,0.5); }
+    .enemy-intent[data-kind="debuff"] { color:var(--violet); border-color:rgba(180,155,255,0.5); }
+    .enemy-body { width:82px; height:82px; display:flex; align-items:center; justify-content:center; border-radius:22px;
+      background:radial-gradient(closest-side, rgba(181,64,76,0.22), rgba(0,0,0,0.35)); border:1px solid rgba(205,180,110,0.22);
+      box-shadow:inset 0 0 24px rgba(0,0,0,0.5), 0 12px 30px rgba(0,0,0,0.45); }
+    .enemy-glyph { font-size:42px; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6)); animation:float 5s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+    .enemy-name { font-family:"Cormorant Garamond",serif; font-weight:600; font-size:15px; color:var(--parch); }
+    .enemy-hpbar { width:100%; height:7px; border-radius:4px; background:rgba(0,0,0,0.5); overflow:hidden; border:1px solid rgba(0,0,0,0.4); }
+    .enemy-hpfill { height:100%; background:linear-gradient(90deg,var(--ox-deep),var(--ox)); transition:width 320ms ease; }
+    .enemy-stats { font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--text-dim); display:flex; gap:7px; }
+    .enemy-block { color:var(--teal); }
+
+    #fx-layer { position:absolute; inset:0; z-index:30; pointer-events:none; overflow:hidden; }
+    .dmg-float { position:absolute; font-family:"Cormorant Garamond",serif; font-weight:700; font-size:30px; color:#ffd0c4;
+      text-shadow:0 2px 12px rgba(0,0,0,0.8), 0 0 18px rgba(181,64,76,0.7); animation:floatUp 900ms ease-out forwards; }
+    .dmg-float.block { color:var(--teal); text-shadow:0 2px 12px rgba(0,0,0,0.8), 0 0 18px rgba(95,198,189,0.6); }
+    .dmg-float.mod { color:var(--gold-2); font-size:24px; text-shadow:0 2px 12px rgba(0,0,0,0.8), 0 0 18px rgba(205,162,74,0.6); }
+    @keyframes floatUp { 0%{opacity:0; transform:translateY(6px) scale(0.8);} 18%{opacity:1; transform:translateY(-4px) scale(1.1);} 100%{opacity:0; transform:translateY(-46px) scale(1);} }
+
+    /* spell line */
+    #line-stage { margin-top:auto; padding:4px 10px 2px; }
+    #line-hint { text-align:center; font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:0.28em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px; }
+    #line-hint b { color:var(--gold-deep); }
+    #line-wrap { display:flex; align-items:stretch; gap:6px; }
+    .drop-zone { flex:0 0 22px; border-radius:10px; border:1px dashed rgba(205,180,110,0.0); display:flex; align-items:center; justify-content:center; color:var(--gold-2); font-size:18px; opacity:0; transition:opacity 160ms, border-color 160ms; }
+    #app[data-phase="placing"] .drop-zone { opacity:0.7; border-color:rgba(205,180,110,0.4); animation:dzPulse 1.4s ease-in-out infinite; }
+    @keyframes dzPulse { 0%,100%{opacity:0.4;} 50%{opacity:0.9;} }
+    .drop-zone:hover { opacity:1; border-color:var(--gold-2); background:rgba(205,162,74,0.08); }
+    #line { flex:1; display:flex; align-items:flex-end; justify-content:center; gap:5px; min-height:118px; overflow-x:auto; overflow-y:visible; padding:6px 2px; scrollbar-width:none; }
+    #line::-webkit-scrollbar { display:none; }
+    #line-empty { width:100%; text-align:center; color:var(--text-faint); font-style:italic; font-size:12px; align-self:center; }
+
+    .lcard { position:relative; flex:0 0 auto; width:76px; height:104px; border-radius:9px; padding:7px 5px;
+      display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
+      background:linear-gradient(180deg,var(--parch),var(--parch-2)); border:1px solid var(--gold-deep); color:var(--parch-ink);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.22), 0 6px 14px rgba(0,0,0,0.45);
+      animation:dealIn 280ms cubic-bezier(.2,.8,.2,1) both; transition:transform 140ms ease, box-shadow 180ms; }
+    @keyframes dealIn { from{opacity:0; transform:translateY(20px) scale(.9);} to{opacity:1; transform:translateY(0);} }
+    .lcard:hover { transform:translateY(-8px); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3), 0 12px 22px rgba(0,0,0,0.55); }
+    .lcard[data-kind="strike"] { border-color:var(--ox-deep); }
+    .lcard[data-kind="ward"]   { border-color:var(--teal-deep); }
+    .lcard[data-kind="whet"], .lcard[data-kind="surge"] { border-color:var(--gold-deep); }
+    .lcard[data-kind="echo"], .lcard[data-kind="ergo"], .lcard[data-kind="tally"] { border-color:var(--violet-deep); }
+    .lcard.resolving { transform:translateY(-14px) scale(1.08); box-shadow:0 0 0 2px var(--gold-2), 0 0 26px rgba(231,201,126,0.7); z-index:5; }
+    .lcard.spent { opacity:0.35; filter:grayscale(0.5); }
+    #app[data-phase="acting"] .lcard[data-playable="true"] { cursor:pointer; }
+    #app[data-phase="acting"] .lcard[data-playable="true"]:hover { transform:translateY(-12px) scale(1.06); box-shadow:0 0 0 2px var(--gold-2), 0 0 24px rgba(231,201,126,0.6); }
+    .lcard[data-playable="false"] { opacity:0.5; }
+    .lcard[data-buffed="true"] { border-color:var(--gold); box-shadow:inset 0 0 0 1px rgba(231,201,126,0.5), 0 0 16px rgba(205,162,74,0.4), 0 6px 14px rgba(0,0,0,0.45); }
+    .lcard[data-buffed="true"] .lcard-name::after { content:" ✦"; color:var(--gold-deep); font-size:10px; }
+    .lcard-glyph { font-size:30px; line-height:1; margin-top:2px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3)); }
+    .lcard[data-kind="strike"] .lcard-glyph { color:var(--ox-deep); }
+    .lcard[data-kind="ward"] .lcard-glyph { color:var(--teal-deep); }
+    .lcard[data-kind="echo"] .lcard-glyph, .lcard[data-kind="ergo"] .lcard-glyph, .lcard[data-kind="tally"] .lcard-glyph { color:var(--violet-deep); }
+    .lcard-name { font-family:"Cormorant Garamond",serif; font-weight:700; font-size:13px; line-height:1; }
+    .lcard-val { font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:15px; margin-top:auto; color:#5a1f24; }
+    .lcard[data-kind="ward"] .lcard-val { color:var(--teal-deep); }
+    .lcard[data-kind="whet"] .lcard-val, .lcard[data-kind="surge"] .lcard-val { color:var(--gold-deep); }
+    .lcard[data-kind="echo"] .lcard-val, .lcard[data-kind="ergo"] .lcard-val, .lcard[data-kind="tally"] .lcard-val { color:var(--violet-deep); }
+
+    /* placement bar */
+    #place-bar { display:none; position:relative; z-index:7; flex-direction:column; align-items:center; gap:8px; padding:8px 12px 6px; }
+    #app[data-phase="placing"] #place-bar { display:flex; }
+    #place-count { font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); }
+    #place-row { display:flex; align-items:center; gap:14px; }
+    .place-btn { width:52px; height:64px; border-radius:11px; border:1px solid var(--gold-deep); background:rgba(40,31,12,0.7); color:var(--gold-2);
+      font-size:22px; display:flex; align-items:center; justify-content:center; transition:transform 120ms, box-shadow 160ms, background 160ms; }
+    .place-btn:hover { transform:translateY(-2px); box-shadow:0 0 22px rgba(205,162,74,0.4); background:rgba(60,46,16,0.8); }
+    #place-card { width:84px; height:114px; border-radius:11px; padding:9px 7px; display:flex; flex-direction:column; align-items:center; gap:3px;
+      background:linear-gradient(180deg,var(--parch),var(--parch-2)); border:1px solid var(--gold); color:var(--parch-ink);
+      box-shadow:0 0 28px rgba(205,162,74,0.4), inset 0 0 0 1px rgba(255,255,255,0.25); animation:popIn 240ms cubic-bezier(.2,.8,.2,1); }
+    @keyframes popIn { from{opacity:0; transform:scale(.8) translateY(8px);} to{opacity:1; transform:scale(1);} }
+    #place-card .pc-glyph { font-size:34px; line-height:1; }
+    #place-card .pc-name { font-family:"Cormorant Garamond",serif; font-weight:700; font-size:15px; }
+    #place-card .pc-blurb { font-size:9.5px; line-height:1.25; text-align:center; color:var(--parch-ink); padding:0 2px; }
+
+    /* player bar */
+    #player-bar { position:relative; z-index:5; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; padding:8px 14px;
+      background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.35)); border-top:1px solid var(--line); }
+    .pile { display:flex; flex-direction:column; align-items:center; gap:1px; font-family:"IBM Plex Mono",monospace; font-size:9px; color:var(--text-faint); letter-spacing:0.1em; }
+    .pile b { font-size:14px; font-weight:600; color:var(--text-dim); }
+    #player-vitals { display:flex; flex-direction:column; gap:4px; }
+    #player-hp-line { display:flex; align-items:center; gap:8px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+    #player-hp-line .heart { color:var(--ox); }
+    .chip { display:inline-flex; align-items:center; gap:3px; padding:1px 7px; border-radius:999px; font-size:11px; border:1px solid; }
+    #player-block-chip { color:var(--teal); border-color:rgba(95,198,189,0.4); background:rgba(95,198,189,0.08); }
+    #player-block-chip[data-zero="true"] { opacity:0.3; }
+    #player-weak-chip { color:var(--violet); border-color:rgba(180,155,255,0.4); background:rgba(180,155,255,0.08); }
+    #player-weak-chip[data-zero="true"] { display:none; }
+    #player-hp-bar { height:8px; border-radius:4px; background:rgba(0,0,0,0.5); overflow:hidden; border:1px solid rgba(0,0,0,0.4); width:190px; max-width:48vw; }
+    #player-hp-fill { height:100%; background:linear-gradient(90deg,#6e2730,var(--ox)); transition:width 320ms ease; }
+
+    /* actions */
+    #actions { position:relative; z-index:5; display:flex; gap:10px; padding:8px 12px 14px; }
+    #app[data-phase="placing"] #actions { display:none; }
+    #actions button { flex:1; padding:13px; font-family:"Cormorant Garamond",serif; font-weight:700; font-size:16px; letter-spacing:0.12em; border-radius:11px; transition:transform 110ms, box-shadow 180ms, opacity 160ms; }
+    #btn-cast { color:var(--ink); border:1px solid #ffe9a8; background:linear-gradient(180deg,var(--gold-2),var(--gold-deep)); box-shadow:0 0 24px rgba(205,162,74,0.4); }
+    #btn-cast:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 0 40px rgba(205,162,74,0.65); }
+    #btn-cast:disabled { opacity:0.3; }
+    #btn-end { color:var(--text); border:1px solid var(--line); background:rgba(20,28,45,0.7); }
+    #btn-end:hover { border-color:var(--violet-deep); color:var(--violet); }
+    #actions button:active { transform:translateY(1px); }
+
+    /* overlays: reward / phase / title / toast (shared) */
+    #reward,#phase-overlay { display:none; position:absolute; inset:0; z-index:40; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; }
+    #reward { background:radial-gradient(closest-side at 50% 40%, rgba(16,12,22,0.86), rgba(8,6,12,0.96)); backdrop-filter:blur(3px); }
+    #reward.show,#phase-overlay.show { display:flex; animation:fade 280ms ease; }
+    @keyframes fade { from{opacity:0;} to{opacity:1;} }
+    #reward h2 { font-family:"Cormorant Garamond",serif; font-weight:700; font-size:26px; color:var(--gold-2); }
+    #reward h2 small { display:block; font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:0.24em; color:var(--text-faint); text-transform:uppercase; margin-top:4px; }
+    #reward-cards { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+    #reward-cards .lcard { width:84px; height:114px; }
+    #reward-skip { font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:0.16em; color:var(--text-faint); background:none; border:none; text-transform:uppercase; }
+    #reward-skip:hover { color:var(--text-dim); }
+    #phase-overlay { background:radial-gradient(closest-side at 50% 40%, rgba(12,8,16,0.9), rgba(6,4,10,0.98)); backdrop-filter:blur(4px); }
+    #phase-kicker { font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--text-faint); }
+    #phase-title { font-family:"Cormorant Garamond",serif; font-weight:700; font-size:44px; }
+    #phase-overlay[data-kind="defeat"] #phase-title { color:var(--ox); text-shadow:0 0 34px rgba(181,64,76,0.6); }
+    #phase-overlay[data-kind="victory"] #phase-title { color:var(--gold-2); text-shadow:0 0 34px rgba(205,162,74,0.55); }
+    #phase-text { font-size:13.5px; color:var(--text-dim); line-height:1.6; max-width:300px; font-style:italic; }
+    #btn-phase { margin-top:8px; font-family:"Cormorant Garamond",serif; font-weight:700; font-size:15px; letter-spacing:0.14em; padding:13px 34px; color:var(--ink); border:1px solid #ffe9a8; border-radius:11px; background:linear-gradient(180deg,var(--gold-2),var(--gold-deep)); box-shadow:0 0 30px rgba(205,162,74,0.4); }
+    #btn-phase:hover { transform:translateY(-2px); box-shadow:0 0 46px rgba(205,162,74,0.6); }
+
+    /* title */
+    #title { position:absolute; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:34px; text-align:center;
+      background:radial-gradient(130% 80% at 50% 16%, rgba(94,68,166,0.28), transparent 55%), linear-gradient(180deg,#160f1e,#0a0710); transition:opacity 520ms ease, transform 520ms ease; }
+    #title.hide { opacity:0; transform:scale(1.05); pointer-events:none; }
+    #title .mark { font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:0.42em; text-transform:uppercase; color:var(--text-faint); }
+    #title h1 { font-family:"Cormorant Garamond",serif; font-weight:700; font-size:clamp(46px,16vw,74px); line-height:0.92; color:var(--parch); text-shadow:0 4px 40px rgba(94,68,166,0.5); }
+    #title h1 .self { font-style:italic; color:var(--gold-2); }
+    #title .tag { font-size:13.5px; line-height:1.7; color:var(--text-dim); max-width:330px; font-style:italic; }
+    #title .tag em { color:var(--violet); font-style:normal; }
+    #title .rules { font-family:"IBM Plex Mono",monospace; font-size:10.5px; line-height:1.9; color:var(--text-faint); letter-spacing:0.04em; }
+    #title .rules b { color:var(--gold-2); }
+    #btn-start { margin-top:6px; font-family:"Cormorant Garamond",serif; font-weight:700; font-size:16px; letter-spacing:0.18em; padding:15px 44px; color:var(--ink); border:1px solid #ffe9a8; border-radius:12px; background:linear-gradient(180deg,var(--gold-2),var(--gold-deep));
+      opacity:0; animation:revealUp 700ms cubic-bezier(.2,.8,.2,1) 560ms forwards, glowPulse 2.8s ease-in-out 1.4s infinite; }
+    @keyframes glowPulse { 0%,100%{box-shadow:0 0 30px rgba(205,162,74,0.4);} 50%{box-shadow:0 0 58px rgba(205,162,74,0.7);} }
+    #btn-start:hover { transform:translateY(-2px) scale(1.02); }
+    .reveal { opacity:0; transform:translateY(14px); animation:revealUp 700ms cubic-bezier(.2,.8,.2,1) forwards; }
+    .d1{animation-delay:80ms;} .d2{animation-delay:240ms;} .d3{animation-delay:420ms;} .d4{animation-delay:600ms;}
+    @keyframes revealUp { to{opacity:1; transform:translateY(0);} }
+
+    #toast { pointer-events:none; position:absolute; left:16px; right:16px; bottom:140px; z-index:55; background:rgba(10,7,14,0.94); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:10px 12px; font-size:12px; line-height:1.45; text-align:center; opacity:0; transform:translateY(8px); transition:opacity 160ms ease, transform 160ms ease; }
+    #toast.show { opacity:1; transform:translateY(0); }
+  </style>
+</head>
+<body>
+  <div id="app" data-phase="placing">
+    <div id="topbar">
+      <span id="act-label">The Author's Margins <small id="act-progress">FIGHT 1 / 3</small></span>
+      <button id="btn-restart" type="button" title="Restart run">&#10227;</button>
+    </div>
+
+    <div id="table">
+      <div id="enemies"></div>
+      <div id="fx-layer"></div>
+
+      <div id="line-stage">
+        <div id="line-hint">resolves <b>left &#8594; right</b></div>
+        <div id="line-wrap">
+          <button class="drop-zone" id="drop-left" type="button" title="place left">&#10092;</button>
+          <div id="line"></div>
+          <button class="drop-zone" id="drop-right" type="button" title="place right">&#10093;</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="place-bar">
+      <div id="place-count">drawing &mdash; place 1 of 3</div>
+      <div id="place-row">
+        <button class="place-btn" id="place-left" type="button">&#10092;</button>
+        <div id="place-card"></div>
+        <button class="place-btn" id="place-right" type="button">&#10093;</button>
+      </div>
+    </div>
+
+    <div id="player-bar">
+      <div class="pile"><b id="draw-count">0</b>DRAW</div>
+      <div id="player-vitals">
+        <div id="player-hp-line">
+          <span><span class="heart">&#9829;</span> <span id="player-hp">70/70</span></span>
+          <span class="chip" id="player-block-chip" data-zero="true">&#9114; <span id="player-block">0</span></span>
+          <span class="chip" id="player-weak-chip" data-zero="true">Weak <span id="player-weak">0</span></span>
+        </div>
+        <div id="player-hp-bar"><div id="player-hp-fill" style="width:100%"></div></div>
+      </div>
+      <div class="pile"><b id="discard-count">0</b>USED</div>
+    </div>
+
+    <div id="actions">
+      <button id="btn-end" type="button">END TURN</button>
+    </div>
+
+    <!-- overlays -->
+    <div id="reward">
+      <h2>Spoils<small>add one card to your tome</small></h2>
+      <div id="reward-cards"></div>
+      <button id="reward-skip" type="button">skip &mdash; take nothing</button>
+    </div>
+
+    <div id="phase-overlay" data-kind="defeat">
+      <span id="phase-kicker">The Manuscript</span>
+      <h2 id="phase-title">UNWRITTEN</h2>
+      <p id="phase-text"></p>
+      <button id="btn-phase" type="button">BEGIN ANEW</button>
+    </div>
+
+    <div id="title">
+      <span class="mark reveal d1">A Deckbuilder Of Word Order</span>
+      <h1 class="reveal d2"><span class="self">Self</span>-Reference</h1>
+      <p class="tag reveal d3">Each turn you draw one card and slot it <em>left</em> or <em>right</em> on a line, then cast a single card &mdash; which reads the cards beside it. Position is the whole game.</p>
+      <div class="rules reveal d3">
+        each turn &mdash; draw <b>1</b>, place <b>&#10092;/&#10093;</b>, cast <b>1</b><br>
+        cards react to their neighbours &middot; order is everything
+      </div>
+      <button id="btn-start" class="reveal d4" type="button">DRAW THE FIRST HAND</button>
+    </div>
+
+    <div id="toast"></div>
+    <div id="grain"></div>
+  </div>
+  <script type="module" src="/main.ts"></script>
+</body>
+</html>
