@@ -1,46 +1,48 @@
 {
   "id": "stage_005",
-  "title": "乾かす石",
-  "goal": "stone と flower を両立させる",
-  "turnLimit": 8,
-  "cardUses": 4,
+  "title": "氾濫",
+  "goal": "10ターン後まで花を1つ残す",
+  "turnLimit": 10,
+  "cardUses": 5,
   "objects": [
-    { "id": "flower", "x": 1, "y": 1, "traits": ["flower", "alive"], "energy": 2, "stability": 5 },
-    { "id": "stone", "x": 2, "y": 1, "traits": ["stone"], "energy": 1, "stability": 6 },
-    { "id": "water", "x": 3, "y": 1, "traits": ["water", "wet"], "energy": 3, "stability": 4 }
+    { "id": "water_0_0", "x": 0, "y": 0, "traits": ["water", "wet"], "energy": 5, "stability": 5 },
+    { "id": "water_1_0", "x": 1, "y": 0, "traits": ["water", "wet"], "energy": 5, "stability": 5 },
+    { "id": "water_2_0", "x": 2, "y": 0, "traits": ["water", "wet"], "energy": 5, "stability": 5 },
+    { "id": "flower_a",  "x": 0, "y": 3, "traits": ["flower", "alive"], "energy": 5, "stability": 6 },
+    { "id": "flower_b",  "x": 3, "y": 3, "traits": ["flower", "alive"], "energy": 5, "stability": 6 }
   ],
   "rules": [
     {
-      "id": "stone_drains_water",
-      "title": "石は水を乾かす",
-      "description": "石の隣の水は濡れを失い、乾きます。",
-      "condition": { "near": ["stone", "wet"] },
-      "effect": { "targetTrait": "water", "removeTrait": "wet", "addTrait": "dry" },
+      "id": "water_falls",
+      "title": "水は落ちる",
+      "description": "水は毎ターン1マス下に広がります。",
+      "condition": { "hasTraits": ["water"] },
+      "effect": { "targetTrait": "water", "spread": { "withTraits": ["water", "wet"], "dy": 1 } },
       "priority": 1,
       "visibleFromTurn": 1
     },
     {
-      "id": "dry_withers_flower",
-      "title": "乾きは花を枯らす",
-      "description": "乾いたものの隣に花があると、花の安定が下がります。",
-      "condition": { "near": ["dry", "flower"] },
-      "effect": { "targetTrait": "flower", "stabilityDelta": -3 },
+      "id": "water_wets_flower",
+      "title": "水は花を濡らす",
+      "description": "水に隣接した花は「濡れ」の性質を持ちます。",
+      "condition": { "adjacent": { "subject": "flower", "object": "wet" } },
+      "effect": { "targetTrait": "flower", "addTrait": "wet" },
       "priority": 2,
       "visibleFromTurn": 1
     },
     {
-      "id": "water_grows_flower",
-      "title": "水は花を育てる",
-      "description": "水の隣に花があると、花のエネルギーが増えます。",
-      "condition": { "near": ["water", "flower"] },
-      "effect": { "targetTrait": "flower", "energyDelta": 1 },
+      "id": "wet_flower_wilts",
+      "title": "濡れた花は萎れる",
+      "description": "濡れた花は毎ターン生命力が1下がります。",
+      "condition": { "hasTraits": ["flower", "wet"] },
+      "effect": { "targetTrait": "flower", "stabilityDelta": -1 },
       "priority": 3,
       "visibleFromTurn": 1
     }
   ],
-  "availableCards": ["delay", "sacrifice"],
+  "availableCards": ["delay", "exception"],
   "winCondition": {
-    "afterTurns": 8,
+    "afterTurns": 10,
     "minStability": 1,
     "minTension": 0,
     "minLife": 1
