@@ -25,6 +25,7 @@ export type Effect = {
   stabilityDelta?: number;
   addTrait?: Trait;
   removeTrait?: Trait;
+  spread?: { withTraits: Trait[]; dy?: number; dx?: number };
 };
 
 export type Rule = {
